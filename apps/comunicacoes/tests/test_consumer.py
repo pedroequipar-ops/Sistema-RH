@@ -104,3 +104,35 @@ def test_consumir_notificacao_persiste_registro():
     assert "teste" in notificacao.mensagem
     assert notificacao.lida is False
     assert channel.acked == [1]
+
+
+def test_consumir_notificacao_de_entrevista_agendada_monta_mensagem_especifica():
+    processo = ProcessoSeletivoFactory()
+    payload = {
+        "tipo": "entrevista_agendada",
+        "destinatario_user_id": str(processo.vaga.solicitante_id),
+        "candidato_nome": processo.candidato.nome,
+        "vaga_cargo": processo.vaga.cargo,
+        "data_hora": "2026-01-01T10:00:00-03:00",
+        "processo_id": str(processo.id),
+    }
+
+    _publicar("_consumir_notificacao", payload)
+
+    notificacao = Notificacao.objects.get(processo=processo, tipo="entrevista_agendada")
+    assert "Entrevista agendada" in notificacao.mensagem
+    assert processo.candidato.nome in notificacao.mensagem
+
+
+def test_consumir_notificacao_com_tipo_desconhecido_usa_mensagem_generica():
+    processo = ProcessoSeletivoFactory()
+    payload = {
+        "tipo": "evento_novo_ainda_sem_template",
+        "destinatario_user_id": str(processo.vaga.solicitante_id),
+        "processo_id": str(processo.id),
+    }
+
+    _publicar("_consumir_notificacao", payload)
+
+    notificacao = Notificacao.objects.get(processo=processo)
+    assert notificacao.mensagem == "Notificação: evento_novo_ainda_sem_template"

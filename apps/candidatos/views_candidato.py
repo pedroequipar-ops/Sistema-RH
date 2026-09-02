@@ -57,6 +57,7 @@ class CandidatoMeView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsCandidato]
 
     def get_object(self):
+        capture_company_id(self.request)
         return self.request.user
 
 
@@ -66,6 +67,7 @@ class CandidatoMeCurriculoView(APIView):
     parser_classes = [MultiPartParser]
 
     def post(self, request):
+        capture_company_id(request)
         arquivo = request.FILES.get("curriculo")
         if not arquivo:
             raise ValidationError({"curriculo": "Arquivo obrigatório."})
@@ -79,6 +81,7 @@ class MinhasCandidaturasView(generics.ListAPIView):
     permission_classes = [IsCandidato]
 
     def get_queryset(self):
+        capture_company_id(self.request)
         return ProcessoSeletivo.objects.filter(candidato=self.request.user).select_related("vaga")
 
 
@@ -92,6 +95,7 @@ class MinhaAdmissaoView(generics.RetrieveAPIView):
     permission_classes = [IsCandidato]
 
     def get_object(self):
+        capture_company_id(self.request)
         try:
             return Funcionario.objects.get(candidato=self.request.user)
         except Funcionario.DoesNotExist:
@@ -104,6 +108,7 @@ class MeuChecklistAdmissaoUploadView(APIView):
     parser_classes = [MultiPartParser]
 
     def post(self, request, item_id):
+        capture_company_id(request)
         arquivo = request.FILES.get("documento")
         if not arquivo:
             raise ValidationError({"documento": "Arquivo obrigatório."})

@@ -135,6 +135,150 @@ def test_permissao_negada_sem_rbac():
     assert response.status_code == 403
 
 
+def test_reprovar_na_etapa_diretoria_cancela_vaga():
+    company_id = uuid.uuid4()
+    diretoria = UserFactory(role=User.Role.DIRETORIA, company_id=company_id)
+    UserFunctionPermissionFactory(user=diretoria, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(
+        company_id=company_id, status_aprovacao=Vaga.StatusAprovacao.AGUARDANDO_DIRETORIA
+    )
+
+    response = auth_client(diretoria, company_id).post(
+        f"/v1/vagas/{vaga.id}/reprovar/", {}, format="json"
+    )
+
+    assert response.status_code == 200
+    vaga.refresh_from_db()
+    assert vaga.status_aprovacao == Vaga.StatusAprovacao.REPROVADA
+    assert vaga.status == Vaga.Status.CANCELADA
+
+
+def test_rh_nao_pode_reprovar_etapa_da_diretoria():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+    UserFunctionPermissionFactory(user=rh, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(
+        company_id=company_id, status_aprovacao=Vaga.StatusAprovacao.AGUARDANDO_DIRETORIA
+    )
+
+    response = auth_client(rh, company_id).post(f"/v1/vagas/{vaga.id}/reprovar/", {}, format="json")
+
+    assert response.status_code == 403
+
+
+def test_aprovar_vaga_ja_aprovada_retorna_400():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+    UserFunctionPermissionFactory(user=rh, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(
+        company_id=company_id,
+        status_aprovacao=Vaga.StatusAprovacao.APROVADA,
+        status=Vaga.Status.ABERTA,
+    )
+
+    response = auth_client(rh, company_id).post(f"/v1/vagas/{vaga.id}/aprovar/", {}, format="json")
+
+    assert response.status_code == 400
+
+
+def test_rh_pausa_vaga_aberta():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+    UserFunctionPermissionFactory(user=rh, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(
+        company_id=company_id,
+        status_aprovacao=Vaga.StatusAprovacao.APROVADA,
+        status=Vaga.Status.ABERTA,
+    )
+
+    response = auth_client(rh, company_id).post(
+        f"/v1/vagas/{vaga.id}/pausar/", {"observacao": "Aguardando budget"}, format="json"
+    )
+
+    assert response.status_code == 200
+    vaga.refresh_from_db()
+    assert vaga.status == Vaga.Status.PAUSADA
+
+
+def test_gestor_nao_pausa_vaga_de_outro_gestor():
+    company_id = uuid.uuid4()
+    gestor_dono = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
+    outro_gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
+    UserFunctionPermissionFactory(user=outro_gestor, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(
+        company_id=company_id,
+        solicitante=gestor_dono,
+        area_solicitante="Tecnologia",
+        status_aprovacao=Vaga.StatusAprovacao.APROVADA,
+        status=Vaga.Status.ABERTA,
+    )
+
+    response = auth_client(outro_gestor, company_id).post(
+        f"/v1/vagas/{vaga.id}/pausar/", {}, format="json"
+    )
+
+    assert response.status_code == 403
+
+
+def test_pausar_vaga_ja_pausada_retorna_400():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+    UserFunctionPermissionFactory(user=rh, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(company_id=company_id, status=Vaga.Status.PAUSADA)
+
+    response = auth_client(rh, company_id).post(f"/v1/vagas/{vaga.id}/pausar/", {}, format="json")
+
+    assert response.status_code == 400
+
+
+def test_rh_cancela_vaga():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+    UserFunctionPermissionFactory(user=rh, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(company_id=company_id, status=Vaga.Status.ABERTA)
+
+    response = auth_client(rh, company_id).post(
+        f"/v1/vagas/{vaga.id}/cancelar/",
+        {"observacao": "Vaga não é mais necessária"},
+        format="json",
+    )
+
+    assert response.status_code == 200
+    vaga.refresh_from_db()
+    assert vaga.status == Vaga.Status.CANCELADA
+
+
+def test_cancelar_vaga_ja_cancelada_retorna_400():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+    UserFunctionPermissionFactory(user=rh, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(company_id=company_id, status=Vaga.Status.CANCELADA)
+
+    response = auth_client(rh, company_id).post(f"/v1/vagas/{vaga.id}/cancelar/", {}, format="json")
+
+    assert response.status_code == 400
+
+
+def test_gestor_cancela_a_propria_vaga():
+    company_id = uuid.uuid4()
+    gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
+    UserFunctionPermissionFactory(user=gestor, function="vagas", can_view=True, can_edit=True)
+    vaga = VagaFactory(
+        company_id=company_id,
+        solicitante=gestor,
+        area_solicitante="Tecnologia",
+        status=Vaga.Status.ABERTA,
+    )
+
+    response = auth_client(gestor, company_id).post(
+        f"/v1/vagas/{vaga.id}/cancelar/", {}, format="json"
+    )
+
+    assert response.status_code == 200
+    vaga.refresh_from_db()
+    assert vaga.status == Vaga.Status.CANCELADA
+
+
 def test_destroy_faz_soft_delete():
     company_id = uuid.uuid4()
     rh = UserFactory(role=User.Role.RH, company_id=company_id)
