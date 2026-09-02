@@ -1,5 +1,31 @@
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
-router = DefaultRouter()
+from apps.relatorios.views import (
+    CandidatosPorVagaView,
+    CustoContratacaoView,
+    FunilConversaoView,
+    TempoMedioContratacaoView,
+)
 
-urlpatterns = router.urls
+urlpatterns = [
+    path(
+        "relatorios/tempo-medio-contratacao/",
+        TempoMedioContratacaoView.as_view(),
+        name="relatorio-tempo-medio-contratacao",
+    ),
+    path(
+        "relatorios/candidatos-por-vaga/",
+        CandidatosPorVagaView.as_view(),
+        name="relatorio-candidatos-por-vaga",
+    ),
+    path(
+        "relatorios/funil-conversao/",
+        FunilConversaoView.as_view(),
+        name="relatorio-funil-conversao",
+    ),
+    path(
+        "relatorios/custo-contratacao/",
+        CustoContratacaoView.as_view(),
+        name="relatorio-custo-contratacao",
+    ),
+]
