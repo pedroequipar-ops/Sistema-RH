@@ -1,4 +1,4 @@
-import { Bell, LogOut, User as UserIcon } from 'lucide-react'
+import { Bell, Building2, LogOut, User as UserIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { Badge } from '@/components/ui/Badge'
@@ -17,9 +17,14 @@ export function Topbar() {
   const { data: naoLidas } = useNotificacoesNaoLidasCount({ enabled: podeVerNotificacoes })
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
-      <div />
-      <div className="flex items-center gap-3">
+    <header className="flex h-16 shrink-0 items-center border-b border-slate-200 bg-white">
+      <div className="flex w-64 shrink-0 items-center gap-2 border-r border-slate-200 px-5">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sapphire-600 text-white">
+          <Building2 className="h-5 w-5" aria-hidden />
+        </span>
+        <span className="whitespace-nowrap text-sm font-semibold text-slate-900">Sistema RH</span>
+      </div>
+      <div className="flex flex-1 items-center justify-end gap-3 px-6">
         {podeVerNotificacoes && (
           <Link
             to="/comunicacoes?tab=notificacoes"
