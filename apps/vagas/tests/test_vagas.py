@@ -3,10 +3,10 @@ import uuid
 import pytest
 from rest_framework.test import APIClient
 
-from apps.core.factories import UserFactory, UserFunctionPermissionFactory
 from apps.core.models import User
-from apps.vagas.factories import VagaFactory
+from apps.core.tests.factories import UserFactory, UserFunctionPermissionFactory
 from apps.vagas.models import Vaga
+from apps.vagas.tests.factories import VagaFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -2,7 +2,7 @@ import uuid
 
 from django.conf import settings
 
-from apps.candidatos.interfaces import CurriculoParserInterface
+from apps.candidatos.interfaces import CurriculoParserInterface, MotorPontuacaoInterface
 from apps.candidatos.repositories import PdfCurriculoParserRepository
 from utils.queue import QueueEngine
 from utils.storage import MinioStorage
@@ -13,6 +13,20 @@ def get_parser() -> CurriculoParserInterface:
     troque aqui (ex: por um serviço de OCR real) sem tocar em quem consome.
     """
     return PdfCurriculoParserRepository()
+
+
+def get_motor_pontuacao() -> MotorPontuacaoInterface:
+    """Ponto único de resolução do motor de pontuação automática. Ainda sem
+    provedor decidido — hoje toda PontuacaoCandidato é lançada manualmente
+    (ver PontuacaoCandidatoViewSet), sem passar por aqui. Implemente
+    MotorPontuacaoInterface e troque este retorno quando o provedor for
+    definido.
+    """
+    raise NotImplementedError(
+        "Nenhum motor de pontuação automático configurado ainda — o provedor "
+        "(ex: um serviço de IA) não foi decidido. Pontuação hoje é sempre "
+        "lançada manualmente via PontuacaoCandidatoViewSet."
+    )
 
 
 def processar_upload_curriculo(candidato, arquivo):

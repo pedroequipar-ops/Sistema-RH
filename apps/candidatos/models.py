@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -58,3 +59,40 @@ class Candidato(TimeStampedModel):
     @property
     def is_authenticated(self):
         return True
+
+
+class PontuacaoCandidato(TimeStampedModel):
+    """Pontuação do candidato por função/cargo — não uma nota única genérica
+    no Candidato: um mesmo candidato pode ter pontuações diferentes conforme
+    a função sendo considerada. Desacoplada do motor de avaliação atrás de
+    MotorPontuacaoInterface (ver apps.candidatos.interfaces) porque o
+    provedor (ex: um motor de IA) ainda não foi decidido — hoje toda
+    pontuação é lançada manualmente (origem=MANUAL, avaliador preenchido).
+    """
+
+    class Origem(models.TextChoices):
+        MANUAL = "manual", "Avaliação manual"
+        MOTOR_AUTOMATICO = "motor_automatico", "Motor automático"
+
+    candidato = models.ForeignKey(
+        "candidatos.Candidato", related_name="pontuacoes", on_delete=models.CASCADE
+    )
+    funcao = models.CharField(max_length=150)
+    pontuacao = models.DecimalField(max_digits=5, decimal_places=2)
+    origem = models.CharField(max_length=20, choices=Origem.choices, default=Origem.MANUAL)
+    avaliador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="Preenchido quando origem=manual; nulo quando origem=motor_automatico.",
+    )
+    detalhes = models.JSONField(
+        default=dict, blank=True, help_text="Metadados do motor (ex: critérios, versão, prompt)."
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.candidato_id} · {self.funcao}: {self.pontuacao}"

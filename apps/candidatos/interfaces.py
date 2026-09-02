@@ -14,3 +14,21 @@ class CurriculoParserInterface(ABC):
         chaves: nome, email, telefone, resumo_experiencia.
         """
         raise NotImplementedError
+
+
+class MotorPontuacaoInterface(ABC):
+    """Contrato pro motor de pontuação de candidato por função (padrão
+    Interface -> Repository -> View, regra arquitetural 7). O provedor
+    concreto (ex: um motor de IA) ainda não foi decidido — quando for,
+    implemente esta interface e troque em
+    apps.candidatos.services.get_motor_pontuacao(), sem tocar em model,
+    serializer ou view.
+    """
+
+    @abstractmethod
+    def pontuar(self, candidato, funcao: str) -> dict:
+        """Recebe o Candidato e a função/cargo avaliado, retorna um dict
+        com as chaves: pontuacao (Decimal), detalhes (dict, metadados
+        do motor).
+        """
+        raise NotImplementedError

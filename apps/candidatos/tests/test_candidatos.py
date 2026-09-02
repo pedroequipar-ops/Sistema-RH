@@ -3,14 +3,14 @@ import uuid
 import pytest
 from rest_framework.test import APIClient
 
-from apps.candidatos.factories import CandidatoFactory
 from apps.candidatos.models import Candidato
-from apps.core.factories import UserFactory, UserFunctionPermissionFactory
+from apps.candidatos.tests.factories import CandidatoFactory
 from apps.core.models import User
-from apps.processos_seletivos.factories import ProcessoSeletivoFactory
+from apps.core.tests.factories import UserFactory, UserFunctionPermissionFactory
 from apps.processos_seletivos.models import ProcessoSeletivo
-from apps.vagas.factories import VagaFactory
+from apps.processos_seletivos.tests.factories import ProcessoSeletivoFactory
 from apps.vagas.models import Vaga
+from apps.vagas.tests.factories import VagaFactory
 
 pytestmark = pytest.mark.django_db
 

@@ -1,7 +1,7 @@
 import factory
 
-from apps.core.factories import UserFactory
 from apps.core.models import User
+from apps.core.tests.factories import UserFactory
 from apps.vagas.models import Vaga
 
 

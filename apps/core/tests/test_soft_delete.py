@@ -1,7 +1,7 @@
 import pytest
 
-from apps.core.factories import UserFactory
 from apps.core.models import User
+from apps.core.tests.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
 

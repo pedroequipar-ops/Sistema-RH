@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from apps.candidatos.models import Candidato
+from apps.candidatos.models import Candidato, PontuacaoCandidato
 from apps.candidatos.services import processar_upload_curriculo
 from apps.processos_seletivos.models import ProcessoSeletivo
 from apps.vagas.models import Vaga
@@ -201,3 +201,24 @@ class CandidaturaPublicaSerializer(serializers.Serializer):
         )
 
         return processo
+
+
+class PontuacaoCandidatoSerializer(serializers.ModelSerializer):
+    avaliador_nome = serializers.CharField(
+        source="avaliador.full_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = PontuacaoCandidato
+        fields = [
+            "id",
+            "candidato",
+            "funcao",
+            "pontuacao",
+            "origem",
+            "avaliador",
+            "avaliador_nome",
+            "detalhes",
+            "created_at",
+        ]
+        read_only_fields = ["id", "origem", "avaliador", "avaliador_nome", "created_at"]

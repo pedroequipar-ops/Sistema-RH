@@ -1,6 +1,7 @@
 import factory
 
-from apps.candidatos.models import Candidato
+from apps.candidatos.models import Candidato, PontuacaoCandidato
+from apps.core.tests.factories import UserFactory
 
 
 class CandidatoFactory(factory.django.DjangoModelFactory):
@@ -21,3 +22,15 @@ class CandidatoFactory(factory.django.DjangoModelFactory):
         self.set_password(extracted or "Teste123!")
         if create:
             self.save()
+
+
+class PontuacaoCandidatoFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PontuacaoCandidato
+
+    candidato = factory.SubFactory(CandidatoFactory)
+    funcao = "Desenvolvedor Backend"
+    pontuacao = 75.5
+    origem = PontuacaoCandidato.Origem.MANUAL
+    avaliador = factory.SubFactory(UserFactory)
+    company_id = factory.SelfAttribute("candidato.company_id")

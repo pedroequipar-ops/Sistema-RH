@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from apps.candidatos.views import CandidatoViewSet
+from apps.candidatos.views import CandidatoViewSet, PontuacaoCandidatoViewSet
 from apps.candidatos.views_candidato import (
     CandidatoCadastroView,
     CandidatoMeCurriculoView,
@@ -13,6 +13,7 @@ from apps.candidatos.views_publico import CandidaturaPublicaView, VagasPublicasV
 
 router = DefaultRouter()
 router.register("candidatos", CandidatoViewSet, basename="candidato")
+router.register("pontuacoes-candidato", PontuacaoCandidatoViewSet, basename="pontuacao-candidato")
 router.register("vagas-publicas", VagasPublicasViewSet, basename="vaga-publica")
 
 urlpatterns = [

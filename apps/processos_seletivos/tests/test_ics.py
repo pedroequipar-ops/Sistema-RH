@@ -3,10 +3,10 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from apps.core.factories import UserFactory
-from apps.processos_seletivos.factories import ProcessoSeletivoFactory
+from apps.core.tests.factories import UserFactory
 from apps.processos_seletivos.ics import gerar_ics
 from apps.processos_seletivos.models import EntrevistaAgendamento
+from apps.processos_seletivos.tests.factories import ProcessoSeletivoFactory
 
 pytestmark = pytest.mark.django_db
 

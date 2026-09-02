@@ -3,8 +3,8 @@ from datetime import timedelta
 import factory
 from django.utils import timezone
 
-from apps.candidatos.factories import CandidatoFactory
-from apps.core.factories import UserFactory
+from apps.candidatos.tests.factories import CandidatoFactory
+from apps.core.tests.factories import UserFactory
 from apps.processos_seletivos.models import (
     AvaliacaoProcesso,
     EntrevistaAgendamento,
@@ -12,7 +12,7 @@ from apps.processos_seletivos.models import (
     ProcessoSeletivo,
     TesteAplicado,
 )
-from apps.vagas.factories import VagaFactory
+from apps.vagas.tests.factories import VagaFactory
 
 
 class ProcessoSeletivoFactory(factory.django.DjangoModelFactory):
