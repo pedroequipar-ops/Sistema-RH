@@ -7,6 +7,13 @@ import type {
   VagaListItem,
 } from '@/types/vagas'
 
+export async function listVagasParaFiltro() {
+  const { data } = await apiClient.get<PaginatedResponse<VagaListItem>>('/v1/vagas/', {
+    params: { page_size: 100 },
+  })
+  return data
+}
+
 export async function listVagas(filters: VagaFilters) {
   const { data } = await apiClient.get<PaginatedResponse<VagaListItem>>('/v1/vagas/', {
     params: {

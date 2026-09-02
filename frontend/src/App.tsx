@@ -8,6 +8,8 @@ import { CandidatosListPage } from '@/pages/candidatos/CandidatosListPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
+import { ProcessoDetailPage } from '@/pages/processos/ProcessoDetailPage'
+import { ProcessosKanbanPage } from '@/pages/processos/ProcessosKanbanPage'
 import { VagaDetailPage } from '@/pages/vagas/VagaDetailPage'
 import { VagaFormPage } from '@/pages/vagas/VagaFormPage'
 import { VagasListPage } from '@/pages/vagas/VagasListPage'
@@ -30,10 +32,8 @@ export default function App() {
                 <Route path="/vagas/:id" element={<VagaDetailPage />} />
                 <Route path="/candidatos" element={<CandidatosListPage />} />
                 <Route path="/candidatos/:id" element={<CandidatoDetailPage />} />
-                <Route
-                  path="/processos-seletivos"
-                  element={<PlaceholderPage title="Processos seletivos" />}
-                />
+                <Route path="/processos-seletivos" element={<ProcessosKanbanPage />} />
+                <Route path="/processos-seletivos/:id" element={<ProcessoDetailPage />} />
                 <Route path="/comunicacoes" element={<PlaceholderPage title="Comunicações" />} />
                 <Route path="/relatorios" element={<PlaceholderPage title="Relatórios" />} />
                 <Route path="/admissao" element={<PlaceholderPage title="Admissão" />} />

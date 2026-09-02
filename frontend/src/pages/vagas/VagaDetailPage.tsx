@@ -2,7 +2,7 @@ import { ArrowLeft, Ban, CircleCheck, CircleX, Pause, Trash2 } from 'lucide-reac
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
-import { ConfirmActionModal } from '@/components/vagas/ConfirmActionModal'
+import { ConfirmActionModal } from '@/components/shared/ConfirmActionModal'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
