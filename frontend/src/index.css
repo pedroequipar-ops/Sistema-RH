@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+
+  /* Azul-safira: cor de destaque (botões, links, foco, itens ativos) */
+  --color-sapphire-50: #eff5fc;
+  --color-sapphire-100: #dce9f8;
+  --color-sapphire-200: #bad3f1;
+  --color-sapphire-300: #8db7e7;
+  --color-sapphire-400: #5b93d9;
+  --color-sapphire-500: #3474c8;
+  --color-sapphire-600: #1a56b0;
+  --color-sapphire-700: #16458c;
+  --color-sapphire-800: #143972;
+  --color-sapphire-900: #13305e;
+
+  /* Cinza-claro: cor principal (fundo, superfícies, texto) */
+  --color-slate-50: #f7f8fa;
+  --color-slate-100: #eef0f3;
+  --color-slate-200: #e1e4e9;
+  --color-slate-300: #cbd0d8;
+  --color-slate-400: #a3aab5;
+  --color-slate-500: #7c8493;
+  --color-slate-600: #5b6472;
+  --color-slate-700: #434b57;
+  --color-slate-800: #2c323b;
+  --color-slate-900: #1a1e24;
+}
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  border-color: var(--color-slate-200);
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-800);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+}

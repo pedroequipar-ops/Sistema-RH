@@ -21,6 +21,7 @@ urlpatterns = [
         name="docs",
     ),
     # Domain apps (populated etapa a etapa)
+    path("v1/", include("apps.core.urls")),
     path("v1/", include("apps.vagas.urls")),
     path("v1/", include("apps.candidatos.urls")),
     path("v1/", include("apps.processos_seletivos.urls")),
