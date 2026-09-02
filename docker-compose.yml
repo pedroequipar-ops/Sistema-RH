@@ -98,6 +98,30 @@ services:
     command: >
       sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
 
+  worker_curriculos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sistema_rh_worker_curriculos
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_URL: redis://redis:6379/0
+      RABBITMQ_HOST: rabbitmq
+      MINIO_ENDPOINT: http://minio:9000
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    command: python manage.py consumir_curriculos
+
 volumes:
   postgres_data:
   redis_data:

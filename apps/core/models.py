@@ -3,7 +3,7 @@ import uuid
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 
-from apps.core.managers import ActiveObjects, AllObjects
+from apps.core.managers import ActiveObjects, AllObjects, SoftDeleteQuerySet
 
 
 class TimeStampedModel(models.Model):
@@ -38,7 +38,7 @@ class TimeStampedModel(models.Model):
         self.save(update_fields=["active", "updated_at"])
 
 
-class UserManager(BaseUserManager):
+class UserManager(BaseUserManager.from_queryset(SoftDeleteQuerySet)):
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):

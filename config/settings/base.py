@@ -116,6 +116,9 @@ QUEUE_CURRICULOS = "rh.curriculos"
 # MinIO (used by utils.storage.MinioStorage)
 # ---------------------------------------------------------------------------
 MINIO_ENDPOINT = config("MINIO_ENDPOINT", default="http://localhost:9000")
+# Endpoint usado só pra gerar presigned URLs (essas vão pro navegador do
+# usuário, que não resolve o hostname interno do docker-compose).
+MINIO_PUBLIC_ENDPOINT = config("MINIO_PUBLIC_ENDPOINT", default="http://localhost:9000")
 MINIO_ACCESS_KEY = config("MINIO_ACCESS_KEY", default="sistema_rh")
 MINIO_SECRET_KEY = config("MINIO_SECRET_KEY", default="sistema_rh_secret")
 MINIO_USE_SSL = config("MINIO_USE_SSL", default=False, cast=bool)

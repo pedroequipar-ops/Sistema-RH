@@ -17,6 +17,17 @@ class MinioStorage:
             config=Config(signature_version="s3v4"),
             use_ssl=settings.MINIO_USE_SSL,
         )
+        # Presigned URLs vão pro navegador do usuário, que não resolve o
+        # hostname interno do Docker (ex: "minio") — geradas com um client
+        # apontando pro endpoint público, credenciais e assinatura iguais.
+        self._public_client = boto3.client(
+            "s3",
+            endpoint_url=settings.MINIO_PUBLIC_ENDPOINT,
+            aws_access_key_id=settings.MINIO_ACCESS_KEY,
+            aws_secret_access_key=settings.MINIO_SECRET_KEY,
+            config=Config(signature_version="s3v4"),
+            use_ssl=settings.MINIO_USE_SSL,
+        )
 
     def ensure_bucket(self, bucket):
         existing = [b["Name"] for b in self._client.list_buckets().get("Buckets", [])]
@@ -31,8 +42,12 @@ class MinioStorage:
 
     def generate_presigned_url(self, bucket, key, ttl=None):
         ttl = ttl or settings.MINIO_PRESIGNED_URL_TTL
-        return self._client.generate_presigned_url(
+        return self._public_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": bucket, "Key": key},
             ExpiresIn=int(ttl.total_seconds()),
         )
+
+    def download_bytes(self, bucket, key):
+        response = self._client.get_object(Bucket=bucket, Key=key)
+        return response["Body"].read()
