@@ -5,6 +5,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { AuthProvider } from '@/context/AuthContext'
 import { CandidatoDetailPage } from '@/pages/candidatos/CandidatoDetailPage'
 import { CandidatosListPage } from '@/pages/candidatos/CandidatosListPage'
+import { ComunicacoesPage } from '@/pages/comunicacoes/ComunicacoesPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
@@ -34,7 +35,7 @@ export default function App() {
                 <Route path="/candidatos/:id" element={<CandidatoDetailPage />} />
                 <Route path="/processos-seletivos" element={<ProcessosKanbanPage />} />
                 <Route path="/processos-seletivos/:id" element={<ProcessoDetailPage />} />
-                <Route path="/comunicacoes" element={<PlaceholderPage title="Comunicações" />} />
+                <Route path="/comunicacoes" element={<ComunicacoesPage />} />
                 <Route path="/relatorios" element={<PlaceholderPage title="Relatórios" />} />
                 <Route path="/admissao" element={<PlaceholderPage title="Admissão" />} />
               </Route>
