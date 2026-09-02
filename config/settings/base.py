@@ -1,6 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
 from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -182,6 +183,9 @@ CORS_ALLOWED_ORIGINS = config(
     default="http://localhost:5173,http://localhost:3000",
     cast=Csv(),
 )
+# X-Company-ID é obrigatório em toda requisição de domínio (multi-tenancy,
+# ver utils.utils.capture_company_id) e precisa ser liberado no preflight.
+CORS_ALLOW_HEADERS = (*default_headers, "x-company-id")
 
 # ---------------------------------------------------------------------------
 # i18n / static

@@ -6,6 +6,9 @@ import { AuthProvider } from '@/context/AuthContext'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
+import { VagaDetailPage } from '@/pages/vagas/VagaDetailPage'
+import { VagaFormPage } from '@/pages/vagas/VagaFormPage'
+import { VagasListPage } from '@/pages/vagas/VagasListPage'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 const queryClient = new QueryClient()
@@ -20,7 +23,9 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<AppShell />}>
                 <Route path="/" element={<DashboardPage />} />
-                <Route path="/vagas" element={<PlaceholderPage title="Vagas" />} />
+                <Route path="/vagas" element={<VagasListPage />} />
+                <Route path="/vagas/nova" element={<VagaFormPage />} />
+                <Route path="/vagas/:id" element={<VagaDetailPage />} />
                 <Route path="/candidatos" element={<PlaceholderPage title="Candidatos" />} />
                 <Route
                   path="/processos-seletivos"
