@@ -8,7 +8,12 @@ from rest_framework.test import APIClient
 from apps.candidatos.factories import CandidatoFactory
 from apps.core.factories import UserFactory, UserFunctionPermissionFactory
 from apps.core.models import User
-from apps.processos_seletivos.factories import ProcessoSeletivoFactory
+from apps.processos_seletivos.factories import (
+    AvaliacaoProcessoFactory,
+    EntrevistaAgendamentoFactory,
+    ProcessoSeletivoFactory,
+    TesteAplicadoFactory,
+)
 from apps.processos_seletivos.models import (
     AvaliacaoProcesso,
     EntrevistaAgendamento,
@@ -214,3 +219,90 @@ def test_soft_delete_processo():
     assert resposta.status_code == 204
     assert not ProcessoSeletivo.objects.filter(id=processo.id).exists()
     assert ProcessoSeletivo.all_objects.filter(id=processo.id, active=False).exists()
+
+
+def test_soft_delete_teste():
+    company_id = uuid.uuid4()
+    rh = rh_com_permissao(company_id)
+    teste = TesteAplicadoFactory(company_id=company_id)
+
+    resposta = client_interno(rh, company_id).delete(f"/v1/testes-processo/{teste.id}/")
+
+    assert resposta.status_code == 204
+    assert not TesteAplicado.objects.filter(id=teste.id).exists()
+    assert TesteAplicado.all_objects.filter(id=teste.id, active=False).exists()
+
+
+def test_soft_delete_entrevista():
+    company_id = uuid.uuid4()
+    rh = rh_com_permissao(company_id)
+    entrevista = EntrevistaAgendamentoFactory(company_id=company_id)
+
+    resposta = client_interno(rh, company_id).delete(f"/v1/entrevistas/{entrevista.id}/")
+
+    assert resposta.status_code == 204
+    assert not EntrevistaAgendamento.objects.filter(id=entrevista.id).exists()
+    assert EntrevistaAgendamento.all_objects.filter(id=entrevista.id, active=False).exists()
+
+
+def test_isolamento_multi_tenant_avaliacoes():
+    company_a = uuid.uuid4()
+    company_b = uuid.uuid4()
+    rh_a = rh_com_permissao(company_a)
+    AvaliacaoProcessoFactory(company_id=company_b)
+
+    resposta = client_interno(rh_a, company_a).get("/v1/avaliacoes-processo/")
+
+    assert resposta.status_code == 200
+    assert resposta.data["count"] == 0
+
+
+def test_permissao_negada_sem_rbac_avaliacoes():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+
+    resposta = client_interno(rh, company_id).get("/v1/avaliacoes-processo/")
+
+    assert resposta.status_code == 403
+
+
+def test_isolamento_multi_tenant_testes():
+    company_a = uuid.uuid4()
+    company_b = uuid.uuid4()
+    rh_a = rh_com_permissao(company_a)
+    TesteAplicadoFactory(company_id=company_b)
+
+    resposta = client_interno(rh_a, company_a).get("/v1/testes-processo/")
+
+    assert resposta.status_code == 200
+    assert resposta.data["count"] == 0
+
+
+def test_permissao_negada_sem_rbac_testes():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+
+    resposta = client_interno(rh, company_id).get("/v1/testes-processo/")
+
+    assert resposta.status_code == 403
+
+
+def test_isolamento_multi_tenant_entrevistas():
+    company_a = uuid.uuid4()
+    company_b = uuid.uuid4()
+    rh_a = rh_com_permissao(company_a)
+    EntrevistaAgendamentoFactory(company_id=company_b)
+
+    resposta = client_interno(rh_a, company_a).get("/v1/entrevistas/")
+
+    assert resposta.status_code == 200
+    assert resposta.data["count"] == 0
+
+
+def test_permissao_negada_sem_rbac_entrevistas():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+
+    resposta = client_interno(rh, company_id).get("/v1/entrevistas/")
+
+    assert resposta.status_code == 403
