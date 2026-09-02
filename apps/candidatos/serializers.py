@@ -1,9 +1,11 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from apps.candidatos.models import Candidato
 from apps.candidatos.services import processar_upload_curriculo
 from apps.processos_seletivos.models import ProcessoSeletivo
 from apps.vagas.models import Vaga
+from utils.queue import QueueEngine
 from utils.storage import MinioStorage
 
 
@@ -186,5 +188,16 @@ class CandidaturaPublicaSerializer(serializers.Serializer):
 
         if arquivo:
             processar_upload_curriculo(candidato, arquivo)
+
+        QueueEngine().publish(
+            settings.QUEUE_MAIL,
+            {
+                "tipo": "confirmacao_inscricao",
+                "candidato_email": candidato.email,
+                "candidato_nome": candidato.nome,
+                "vaga_cargo": vaga.cargo,
+                "processo_id": str(processo.id),
+            },
+        )
 
         return processo
