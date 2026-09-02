@@ -23,6 +23,7 @@ export function Topbar() {
         {podeVerNotificacoes && (
           <Link
             to="/comunicacoes?tab=notificacoes"
+            aria-label={naoLidas ? `Notificações, ${naoLidas} não lidas` : 'Notificações'}
             className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700"
           >
             <Bell className="h-4.5 w-4.5" aria-hidden />

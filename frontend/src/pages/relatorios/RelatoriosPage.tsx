@@ -6,6 +6,7 @@ import { listVagasParaFiltro } from '@/api/vagas'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Spinner } from '@/components/ui/Spinner'
+import { ErroRelatorio } from '@/components/relatorios/ErroRelatorio'
 import {
   useCandidatosPorVaga,
   useCustoContratacao,
@@ -54,6 +55,8 @@ export function RelatoriosPage() {
           <CardContent>
             {tempoMedio.isLoading ? (
               <Spinner />
+            ) : tempoMedio.isError ? (
+              <ErroRelatorio />
             ) : (
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-semibold text-slate-900">
@@ -77,6 +80,8 @@ export function RelatoriosPage() {
           <CardContent>
             {custoContratacao.isLoading ? (
               <Spinner />
+            ) : custoContratacao.isError ? (
+              <ErroRelatorio />
             ) : (
               <div className="space-y-3">
                 <div className="flex gap-6">
@@ -120,6 +125,8 @@ export function RelatoriosPage() {
           <CardContent>
             {candidatosPorVaga.isLoading ? (
               <Spinner />
+            ) : candidatosPorVaga.isError ? (
+              <ErroRelatorio />
             ) : candidatosPorVaga.data && candidatosPorVaga.data.length > 0 ? (
               <ul className="space-y-2">
                 {candidatosPorVaga.data.map((item) => {
@@ -156,6 +163,8 @@ export function RelatoriosPage() {
           <CardContent>
             {funilConversao.isLoading ? (
               <Spinner />
+            ) : funilConversao.isError ? (
+              <ErroRelatorio />
             ) : funilConversao.data && funilConversao.data.length > 0 ? (
               <ul className="space-y-3">
                 {funilConversao.data.map((item) => (

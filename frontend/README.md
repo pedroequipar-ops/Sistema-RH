@@ -1,32 +1,29 @@
-# React + TypeScript + Vite
+# Sistema RH — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Frontend do sistema de recrutamento e seleção: React 19 + TypeScript + Vite + Tailwind v4.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React Router para navegação, React Query para dados remotos
+- React Hook Form + Zod para formulários
+- Axios com injeção automática de `Authorization` e `X-Company-ID`, e refresh de token em respostas 401
+- lucide-react para ícones (sem emoji em nenhum lugar da UI)
 
-## React Compiler
+## Rodando localmente
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Requer o backend (`../`) rodando via `docker compose up` e a variável `VITE_API_URL` (ver `.env.example`) apontando para ele.
+
+## Scripts
+
+- `npm run dev` — servidor de desenvolvimento
+- `npm run build` — type-check (`tsc -b`) + build de produção
+- `npm run lint` — lint (oxlint)
+
+## Estrutura
+
+Um diretório por módulo de domínio em `src/pages/` (vagas, candidatos, processos, comunicacoes, relatorios, admissao), espelhando os apps do backend. `src/api/` e `src/hooks/` seguem a mesma divisão. Componentes de UI genéricos em `src/components/ui/`, layout em `src/components/layout/`.

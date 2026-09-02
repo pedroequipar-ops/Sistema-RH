@@ -137,12 +137,14 @@ export function FuncionarioDetailPage() {
                     <>
                       <Button
                         variant="secondary"
+                        aria-label={`Aprovar ${item.nome_documento}`}
                         onClick={() => setAcao({ itemId: item.id, tipo: 'aprovado' })}
                       >
                         <Check className="h-4 w-4" aria-hidden />
                       </Button>
                       <Button
                         variant="danger"
+                        aria-label={`Rejeitar ${item.nome_documento}`}
                         onClick={() => setAcao({ itemId: item.id, tipo: 'rejeitado' })}
                       >
                         <X className="h-4 w-4" aria-hidden />
