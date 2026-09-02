@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from apps.admissao.services import criar_funcionario_para_processo
 from apps.core.logger import logger
 from apps.core.models import User
 from apps.core.permissions import HasFunctionPermission
@@ -123,6 +124,8 @@ class ProcessoSeletivoViewSet(viewsets.ModelViewSet):
         )
 
         self._ajustar_status_vaga(processo.vaga, nova_etapa, request.user)
+        if nova_etapa == ProcessoSeletivo.Etapa.CONTRATADO:
+            criar_funcionario_para_processo(processo)
         publicar_mudanca_etapa(processo, etapa_anterior)
         logger.info(
             "processo.mudou_etapa",

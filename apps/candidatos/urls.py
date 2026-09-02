@@ -7,6 +7,8 @@ from apps.candidatos.views_candidato import (
     CandidatoMeCurriculoView,
     CandidatoMeView,
     CandidatoTokenObtainView,
+    MeuChecklistAdmissaoUploadView,
+    MinhaAdmissaoView,
     MinhasCandidaturasView,
 )
 from apps.candidatos.views_publico import CandidaturaPublicaView, VagasPublicasViewSet
@@ -33,4 +35,10 @@ urlpatterns = [
         name="candidato-minhas-candidaturas",
     ),
     path("candidaturas/", CandidaturaPublicaView.as_view(), name="candidatura-publica"),
+    path("candidatos/me/admissao/", MinhaAdmissaoView.as_view(), name="candidato-minha-admissao"),
+    path(
+        "candidatos/me/admissao/checklist/<uuid:item_id>/upload/",
+        MeuChecklistAdmissaoUploadView.as_view(),
+        name="candidato-checklist-admissao-upload",
+    ),
 ] + router.urls
