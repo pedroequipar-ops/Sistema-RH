@@ -1,0 +1,9 @@
+{% extends "emails/_base.html" %}
+{% block conteudo %}
+  <h2 style="margin:0 0 16px 0;">Convite para entrevista</h2>
+  <p>Olá {{ candidato_nome }},</p>
+  <p>Você foi convidado para uma entrevista referente à vaga de <strong>{{ vaga_cargo }}</strong>.</p>
+  <p><strong>Data/hora:</strong> {{ data_hora }}<br>
+     <strong>Local/link:</strong> {{ local_ou_link }}</p>
+  <p>Anexamos um convite de calendário (.ics) — basta abrir o anexo para adicionar automaticamente ao seu calendário (Google, Outlook etc.).</p>
+{% endblock %}

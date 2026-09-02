@@ -122,6 +122,28 @@ services:
         condition: service_healthy
     command: python manage.py consumir_curriculos
 
+  worker_comunicacoes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sistema_rh_worker_comunicacoes
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_URL: redis://redis:6379/0
+      RABBITMQ_HOST: rabbitmq
+      MINIO_ENDPOINT: http://minio:9000
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    command: python manage.py consumir_comunicacoes
+
 volumes:
   postgres_data:
   redis_data:

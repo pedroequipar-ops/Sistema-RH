@@ -1,0 +1,7 @@
+{% extends "emails/_base.html" %}
+{% block conteudo %}
+  <h2 style="margin:0 0 16px 0;">Recebemos sua candidatura!</h2>
+  <p>Olá {{ candidato_nome }},</p>
+  <p>Confirmamos o recebimento da sua candidatura para a vaga de <strong>{{ vaga_cargo }}</strong>.</p>
+  <p>Nossa equipe vai analisar seu perfil e você será avisado por aqui a cada movimentação do processo.</p>
+{% endblock %}

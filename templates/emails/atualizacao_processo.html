@@ -1,0 +1,7 @@
+{% extends "emails/_base.html" %}
+{% block conteudo %}
+  <h2 style="margin:0 0 16px 0;">Atualização do seu processo seletivo</h2>
+  <p>Olá {{ candidato_nome }},</p>
+  <p>Seu processo seletivo para a vaga de <strong>{{ vaga_cargo }}</strong> avançou para a etapa
+     <strong>{{ etapa_atual }}</strong>.</p>
+{% endblock %}
