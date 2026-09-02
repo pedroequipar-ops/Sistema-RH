@@ -3,12 +3,13 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { AppShell } from '@/components/layout/AppShell'
 import { AuthProvider } from '@/context/AuthContext'
+import { FuncionarioDetailPage } from '@/pages/admissao/FuncionarioDetailPage'
+import { FuncionariosListPage } from '@/pages/admissao/FuncionariosListPage'
 import { CandidatoDetailPage } from '@/pages/candidatos/CandidatoDetailPage'
 import { CandidatosListPage } from '@/pages/candidatos/CandidatosListPage'
 import { ComunicacoesPage } from '@/pages/comunicacoes/ComunicacoesPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
-import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { ProcessoDetailPage } from '@/pages/processos/ProcessoDetailPage'
 import { ProcessosKanbanPage } from '@/pages/processos/ProcessosKanbanPage'
 import { RelatoriosPage } from '@/pages/relatorios/RelatoriosPage'
@@ -38,7 +39,8 @@ export default function App() {
                 <Route path="/processos-seletivos/:id" element={<ProcessoDetailPage />} />
                 <Route path="/comunicacoes" element={<ComunicacoesPage />} />
                 <Route path="/relatorios" element={<RelatoriosPage />} />
-                <Route path="/admissao" element={<PlaceholderPage title="Admissão" />} />
+                <Route path="/admissao" element={<FuncionariosListPage />} />
+                <Route path="/admissao/:id" element={<FuncionarioDetailPage />} />
               </Route>
             </Route>
           </Routes>
