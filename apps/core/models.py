@@ -78,6 +78,7 @@ class User(AbstractBaseUser, TimeStampedModel):
     class Role(models.TextChoices):
         RH = "rh", "RH"
         GESTOR = "gestor", "Gestor"
+        DIRETORIA = "diretoria", "Diretoria"
 
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=150)
