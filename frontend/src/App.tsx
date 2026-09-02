@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { AppShell } from '@/components/layout/AppShell'
 import { AuthProvider } from '@/context/AuthContext'
+import { CandidatoDetailPage } from '@/pages/candidatos/CandidatoDetailPage'
+import { CandidatosListPage } from '@/pages/candidatos/CandidatosListPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
@@ -26,7 +28,8 @@ export default function App() {
                 <Route path="/vagas" element={<VagasListPage />} />
                 <Route path="/vagas/nova" element={<VagaFormPage />} />
                 <Route path="/vagas/:id" element={<VagaDetailPage />} />
-                <Route path="/candidatos" element={<PlaceholderPage title="Candidatos" />} />
+                <Route path="/candidatos" element={<CandidatosListPage />} />
+                <Route path="/candidatos/:id" element={<CandidatoDetailPage />} />
                 <Route
                   path="/processos-seletivos"
                   element={<PlaceholderPage title="Processos seletivos" />}
