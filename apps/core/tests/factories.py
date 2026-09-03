@@ -1,6 +1,6 @@
 import factory
 
-from apps.core.models import User, UserFunctionPermission
+from apps.core.models import Perfil, User, UserFunctionPermission
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -36,3 +36,15 @@ class UserFunctionPermissionFactory(factory.django.DjangoModelFactory):
     @factory.lazy_attribute
     def company_id(self):
         return self.user.company_id
+
+
+class PerfilFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Perfil
+
+    nome = factory.Sequence(lambda n: f"Perfil {n}")
+    slug = factory.Sequence(lambda n: f"perfil-{n}")
+    descricao = ""
+    tipo = Perfil.Tipo.PERSONALIZADO
+    ativo = True
+    company_id = factory.Faker("uuid4")

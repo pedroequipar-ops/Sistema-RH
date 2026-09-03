@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from apps.core.models import User, UserFunctionPermission
+from apps.core.models import Perfil, PerfilFunctionPermission, User, UserFunctionPermission
 
 
 class UserFunctionPermissionInline(admin.TabularInline):
@@ -63,3 +63,17 @@ class UserFunctionPermissionAdmin(admin.ModelAdmin):
     )
     list_filter = ("function", "active")
     search_fields = ("user__email", "function")
+
+
+class PerfilFunctionPermissionInline(admin.TabularInline):
+    model = PerfilFunctionPermission
+    extra = 0
+    fields = ("function", "can_view", "can_create", "can_edit", "can_delete", "active")
+
+
+@admin.register(Perfil)
+class PerfilAdmin(admin.ModelAdmin):
+    inlines = [PerfilFunctionPermissionInline]
+    list_display = ("nome", "slug", "tipo", "ativo", "active")
+    list_filter = ("tipo", "ativo", "active")
+    search_fields = ("nome", "slug")

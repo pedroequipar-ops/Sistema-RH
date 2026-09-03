@@ -90,7 +90,7 @@ def test_permissao_negada_sem_rbac_pontuacoes():
     assert resposta.status_code == 403
 
 
-def test_gestor_so_ve_pontuacoes_de_candidatos_com_processo_na_propria_area():
+def test_gestor_ve_pontuacoes_de_qualquer_area():
     company_id = uuid.uuid4()
     gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
     UserFunctionPermissionFactory(user=gestor, function="candidatos", can_view=True)
@@ -111,7 +111,7 @@ def test_gestor_so_ve_pontuacoes_de_candidatos_com_processo_na_propria_area():
     resposta = client_interno(gestor, company_id).get("/v1/pontuacoes-candidato/")
 
     assert resposta.status_code == 200
-    assert resposta.data["count"] == 1
+    assert resposta.data["count"] == 2
 
 
 def test_motor_de_pontuacao_automatico_ainda_nao_esta_configurado():

@@ -58,7 +58,7 @@ def test_permissao_negada_sem_rbac_funcionarios():
     assert resposta.status_code == 403
 
 
-def test_gestor_so_ve_funcionario_da_propria_area():
+def test_gestor_ve_funcionario_de_qualquer_area():
     company_id = uuid.uuid4()
     gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
     UserFunctionPermissionFactory(user=gestor, function="admissao", can_view=True)
@@ -73,7 +73,7 @@ def test_gestor_so_ve_funcionario_da_propria_area():
     resposta = client_interno(gestor, company_id).get("/v1/funcionarios/")
 
     assert resposta.status_code == 200
-    assert resposta.data["count"] == 1
+    assert resposta.data["count"] == 2
 
 
 def test_permissao_negada_sem_rbac_checklist():

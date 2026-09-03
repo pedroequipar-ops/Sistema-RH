@@ -58,7 +58,7 @@ def test_permissao_negada_sem_rbac_emails():
     assert resposta.status_code == 403
 
 
-def test_gestor_so_ve_emails_de_candidatos_da_propria_area():
+def test_gestor_ve_emails_de_qualquer_area():
     company_id = uuid.uuid4()
     gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
     UserFunctionPermissionFactory(user=gestor, function="comunicacoes", can_view=True)
@@ -73,7 +73,7 @@ def test_gestor_so_ve_emails_de_candidatos_da_propria_area():
     resposta = client_interno(gestor, company_id).get("/v1/emails-enviados/")
 
     assert resposta.status_code == 200
-    assert resposta.data["count"] == 1
+    assert resposta.data["count"] == 2
 
 
 def test_usuario_so_ve_as_proprias_notificacoes():
@@ -126,3 +126,52 @@ def test_nao_marca_notificacao_de_outro_usuario_como_lida():
 
     assert resposta.status_code == 404
     assert Notificacao.objects.get(id=notificacao_de_b.id).lida is False
+
+
+def test_limpar_todas_notificacoes_soma_e_some_da_lista():
+    company_id = uuid.uuid4()
+    rh = rh_com_permissao(company_id)
+    nao_lida = NotificacaoFactory(company_id=company_id, destinatario=rh, lida=False)
+    ja_lida = NotificacaoFactory(company_id=company_id, destinatario=rh, lida=True)
+
+    resposta = client_interno(rh, company_id).post(
+        "/v1/notificacoes/limpar_todas/", {}, format="json"
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.data["limpas"] == 2
+
+    listagem = client_interno(rh, company_id).get("/v1/notificacoes/")
+    assert listagem.data["count"] == 0
+
+    # soft-delete: continua existindo pra auditoria, só não aparece mais
+    for notificacao in (nao_lida, ja_lida):
+        notificacao.refresh_from_db()
+        assert notificacao.active is False
+
+
+def test_limpar_todas_nao_afeta_notificacoes_de_outro_usuario():
+    company_id = uuid.uuid4()
+    rh_a = rh_com_permissao(company_id)
+    rh_b = UserFactory(role=User.Role.RH, company_id=company_id)
+    UserFunctionPermissionFactory(user=rh_b, function="comunicacoes", can_view=True)
+    notificacao_de_b = NotificacaoFactory(company_id=company_id, destinatario=rh_b)
+
+    resposta = client_interno(rh_a, company_id).post(
+        "/v1/notificacoes/limpar_todas/", {}, format="json"
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.data["limpas"] == 0
+    assert Notificacao.objects.get(id=notificacao_de_b.id).active is True
+
+
+def test_permissao_negada_sem_rbac_limpar_todas():
+    company_id = uuid.uuid4()
+    rh = UserFactory(role=User.Role.RH, company_id=company_id)
+
+    resposta = client_interno(rh, company_id).post(
+        "/v1/notificacoes/limpar_todas/", {}, format="json"
+    )
+
+    assert resposta.status_code == 403

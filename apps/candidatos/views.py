@@ -8,7 +8,6 @@ from apps.candidatos.filters import CandidatoFilter
 from apps.candidatos.models import Candidato, PontuacaoCandidato
 from apps.candidatos.serializers import CandidatoSerializer, PontuacaoCandidatoSerializer
 from apps.candidatos.services import processar_upload_curriculo
-from apps.core.models import User
 from apps.core.permissions import HasFunctionPermission
 from utils.utils import capture_company_id
 
@@ -37,11 +36,7 @@ class CandidatoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = Candidato.objects.filter(company_id=company_id)
-        user = self.request.user
-        if user.role == User.Role.GESTOR:
-            queryset = queryset.filter(processos__vaga__area_solicitante=user.area).distinct()
-        return queryset
+        return Candidato.objects.filter(company_id=company_id)
 
     def perform_create(self, serializer):
         company_id = capture_company_id(self.request)
@@ -79,13 +74,7 @@ class PontuacaoCandidatoViewSet(
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = PontuacaoCandidato.objects.filter(company_id=company_id)
-        user = self.request.user
-        if user.role == User.Role.GESTOR:
-            queryset = queryset.filter(
-                candidato__processos__vaga__area_solicitante=user.area
-            ).distinct()
-        return queryset
+        return PontuacaoCandidato.objects.filter(company_id=company_id)
 
     def perform_create(self, serializer):
         company_id = capture_company_id(self.request)

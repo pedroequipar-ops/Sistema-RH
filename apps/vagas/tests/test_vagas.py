@@ -18,7 +18,7 @@ def auth_client(user, company_id):
     return client
 
 
-def test_gestor_cria_vaga_forca_area_e_entra_em_aguardando_rh():
+def test_gestor_cria_vaga_com_area_informada_e_entra_em_aguardando_rh():
     company_id = uuid.uuid4()
     gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
     UserFunctionPermissionFactory(user=gestor, function="vagas", can_create=True)
@@ -28,14 +28,14 @@ def test_gestor_cria_vaga_forca_area_e_entra_em_aguardando_rh():
         "cargo": "Dev Backend",
         "descricao": "desc",
         "requisitos": "req",
-        "area_solicitante": "Financeiro",  # deve ser ignorado e forçado pra área do gestor
+        "area_solicitante": "Financeiro",
         "tipo": "externa",
     }
     response = client.post("/v1/vagas/", payload, format="json")
 
     assert response.status_code == 201
     vaga = Vaga.objects.get(id=response.data["id"])
-    assert vaga.area_solicitante == "Tecnologia"
+    assert vaga.area_solicitante == "Financeiro"
     assert vaga.solicitante_id == gestor.id
     assert vaga.status_aprovacao == Vaga.StatusAprovacao.AGUARDANDO_RH
     assert vaga.status == Vaga.Status.PAUSADA
@@ -99,7 +99,7 @@ def test_gestor_nao_pode_aprovar_propria_vaga():
     assert response.status_code == 403
 
 
-def test_gestor_so_ve_vagas_da_propria_area():
+def test_gestor_ve_vagas_de_qualquer_area():
     company_id = uuid.uuid4()
     gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
     UserFunctionPermissionFactory(user=gestor, function="vagas", can_view=True)
@@ -109,7 +109,7 @@ def test_gestor_so_ve_vagas_da_propria_area():
     response = auth_client(gestor, company_id).get("/v1/vagas/")
 
     assert response.status_code == 200
-    assert response.data["count"] == 1
+    assert response.data["count"] == 2
 
 
 def test_isolamento_multi_tenant():

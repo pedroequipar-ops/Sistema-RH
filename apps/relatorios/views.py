@@ -2,7 +2,6 @@ from django.db.models import Count, DurationField, ExpressionWrapper, F
 from rest_framework import generics
 from rest_framework.response import Response
 
-from apps.core.models import User
 from apps.core.permissions import HasFunctionPermission
 from apps.processos_seletivos.models import HistoricoEtapaProcesso, ProcessoSeletivo
 from apps.relatorios.serializers import (
@@ -25,20 +24,12 @@ ETAPAS_FUNIL = [
 
 def _queryset_processos(request):
     company_id = capture_company_id(request)
-    queryset = ProcessoSeletivo.objects.filter(company_id=company_id)
-    user = request.user
-    if user.role == User.Role.GESTOR:
-        queryset = queryset.filter(vaga__area_solicitante=user.area)
-    return queryset
+    return ProcessoSeletivo.objects.filter(company_id=company_id)
 
 
 def _queryset_vagas(request):
     company_id = capture_company_id(request)
-    queryset = Vaga.objects.filter(company_id=company_id)
-    user = request.user
-    if user.role == User.Role.GESTOR:
-        queryset = queryset.filter(area_solicitante=user.area)
-    return queryset
+    return Vaga.objects.filter(company_id=company_id)
 
 
 class RelatorioBaseView(generics.GenericAPIView):

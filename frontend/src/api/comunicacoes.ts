@@ -26,6 +26,11 @@ export async function marcarNotificacaoLida(id: string) {
   return data
 }
 
+export async function limparNotificacoes() {
+  const { data } = await apiClient.post<{ limpas: number }>('/v1/notificacoes/limpar_todas/')
+  return data
+}
+
 export async function contarNotificacoesNaoLidas() {
   const { data } = await apiClient.get<PaginatedResponse<Notificacao>>('/v1/notificacoes/', {
     params: { lida: 'false', page_size: 1 },

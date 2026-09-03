@@ -41,24 +41,15 @@ class VagaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = Vaga.objects.filter(company_id=company_id)
-        user = self.request.user
-        if user.role == User.Role.GESTOR:
-            queryset = queryset.filter(area_solicitante=user.area)
-        return queryset
+        return Vaga.objects.filter(company_id=company_id)
 
     def perform_create(self, serializer):
         company_id = capture_company_id(self.request)
         user = self.request.user
-        area_solicitante = (
-            user.area
-            if user.role == User.Role.GESTOR
-            else serializer.validated_data.get("area_solicitante", "")
-        )
         vaga = serializer.save(
             company_id=company_id,
             solicitante=user,
-            area_solicitante=area_solicitante,
+            area_solicitante=serializer.validated_data.get("area_solicitante", ""),
             status_aprovacao=Vaga.StatusAprovacao.AGUARDANDO_RH,
             status=Vaga.Status.PAUSADA,
         )

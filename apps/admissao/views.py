@@ -9,15 +9,8 @@ from apps.admissao.serializers import (
     FuncionarioSerializer,
     RevisarChecklistItemSerializer,
 )
-from apps.core.models import User
 from apps.core.permissions import HasFunctionPermission
 from utils.utils import capture_company_id
-
-
-def _aplicar_escopo_gestor(queryset, user, caminho_vaga):
-    if user.role == User.Role.GESTOR:
-        return queryset.filter(**{f"{caminho_vaga}__area_solicitante": user.area})
-    return queryset
 
 
 class FuncionarioViewSet(
@@ -43,8 +36,7 @@ class FuncionarioViewSet(
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = Funcionario.objects.filter(company_id=company_id)
-        return _aplicar_escopo_gestor(queryset, self.request.user, "vaga")
+        return Funcionario.objects.filter(company_id=company_id)
 
 
 class ChecklistItemAdmissaoViewSet(
@@ -61,8 +53,7 @@ class ChecklistItemAdmissaoViewSet(
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = ChecklistItemAdmissao.objects.filter(company_id=company_id)
-        return _aplicar_escopo_gestor(queryset, self.request.user, "funcionario__vaga")
+        return ChecklistItemAdmissao.objects.filter(company_id=company_id)
 
     @action(detail=True, methods=["post"])
     def revisar(self, request, pk=None):

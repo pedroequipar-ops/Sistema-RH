@@ -1,10 +1,10 @@
+from django.utils import timezone
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.comunicacoes.models import EmailEnviado, Notificacao
 from apps.comunicacoes.serializers import EmailEnviadoSerializer, NotificacaoSerializer
-from apps.core.models import User
 from apps.core.permissions import HasFunctionPermission
 from utils.utils import capture_company_id
 
@@ -13,8 +13,7 @@ class EmailEnviadoViewSet(
     mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
 ):
     """Histórico de e-mails enviados (F4). RH/Gestor, RBAC via
-    HasFunctionPermission — Gestor só vê e-mail de candidato com processo
-    em vaga da própria área, mesma regra do banco de talentos."""
+    HasFunctionPermission."""
 
     serializer_class = EmailEnviadoSerializer
     permission_classes = [HasFunctionPermission]
@@ -24,13 +23,7 @@ class EmailEnviadoViewSet(
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = EmailEnviado.objects.filter(company_id=company_id)
-        user = self.request.user
-        if user.role == User.Role.GESTOR:
-            queryset = queryset.filter(
-                candidato__processos__vaga__area_solicitante=user.area
-            ).distinct()
-        return queryset
+        return EmailEnviado.objects.filter(company_id=company_id)
 
 
 class NotificacaoViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -42,7 +35,12 @@ class NotificacaoViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, views
     serializer_class = NotificacaoSerializer
     permission_classes = [HasFunctionPermission]
     permission_path = "comunicacoes"
-    permission_action_map = {"list": "view", "retrieve": "view", "marcar_lida": "view"}
+    permission_action_map = {
+        "list": "view",
+        "retrieve": "view",
+        "marcar_lida": "view",
+        "limpar_todas": "view",
+    }
     filterset_fields = ["tipo", "lida"]
 
     def get_queryset(self):
@@ -55,3 +53,11 @@ class NotificacaoViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, views
         notificacao.lida = True
         notificacao.save(update_fields=["lida", "updated_at"])
         return Response(NotificacaoSerializer(notificacao).data)
+
+    @action(detail=False, methods=["post"])
+    def limpar_todas(self, request):
+        """Soft-delete de todas as notificações do usuário — some da lista,
+        mas continua no banco via all_objects (auditoria), como todo model
+        que herda de TimeStampedModel."""
+        limpas = self.get_queryset().update(active=False, updated_at=timezone.now())
+        return Response({"limpas": limpas})

@@ -2,7 +2,12 @@ import { Bell } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { Spinner } from '@/components/ui/Spinner'
-import { useMarcarNotificacaoLida, useNotificacoes, useNotificacoesNaoLidasCount } from '@/hooks/useComunicacoes'
+import {
+  useLimparNotificacoes,
+  useMarcarNotificacaoLida,
+  useNotificacoes,
+  useNotificacoesNaoLidasCount,
+} from '@/hooks/useComunicacoes'
 import { cn } from '@/lib/cn'
 
 export function NotificacoesBell() {
@@ -12,6 +17,7 @@ export function NotificacoesBell() {
   const { data: naoLidas } = useNotificacoesNaoLidasCount({ enabled: true })
   const { data, isLoading, isError } = useNotificacoes({ lida: '' })
   const marcarLida = useMarcarNotificacaoLida()
+  const limparNotificacoes = useLimparNotificacoes()
 
   useEffect(() => {
     if (!open) return
@@ -42,8 +48,17 @@ export function NotificacoesBell() {
 
       {open && (
         <div className="absolute right-0 top-full z-20 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg">
-          <div className="border-b border-slate-200 px-4 py-3">
+          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <p className="text-sm font-semibold text-slate-900">Notificações</p>
+            {!!data?.results.length && (
+              <button
+                onClick={() => limparNotificacoes.mutate()}
+                disabled={limparNotificacoes.isPending}
+                className="text-xs font-medium text-sapphire-600 hover:text-sapphire-700 disabled:opacity-50"
+              >
+                Limpar
+              </button>
+            )}
           </div>
           <div className="max-h-96 overflow-y-auto">
             {isLoading ? (

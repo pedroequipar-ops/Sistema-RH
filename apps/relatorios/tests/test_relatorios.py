@@ -230,7 +230,7 @@ def test_custo_contratacao_agrega_media_e_total():
     assert Decimal(resposta.data["custo_total"]) == Decimal("8000.00")
 
 
-def test_gestor_so_ve_relatorio_da_propria_area():
+def test_gestor_ve_relatorio_de_qualquer_area():
     company_id = uuid.uuid4()
     gestor = UserFactory(role=User.Role.GESTOR, area="Tecnologia", company_id=company_id)
     UserFunctionPermissionFactory(user=gestor, function="relatorios", can_view=True)
@@ -243,5 +243,4 @@ def test_gestor_so_ve_relatorio_da_propria_area():
     resposta = client_interno(gestor, company_id).get("/v1/relatorios/candidatos-por-vaga/")
 
     assert resposta.status_code == 200
-    assert len(resposta.data) == 1
-    assert resposta.data[0]["vaga_id"] == str(vaga_tecnologia.id)
+    assert len(resposta.data) == 2

@@ -5,6 +5,8 @@ from django.db import models
 
 from apps.core.managers import ActiveObjects, AllObjects, SoftDeleteQuerySet
 
+MODULOS = ["vagas", "candidatos", "processos-seletivos", "comunicacoes", "relatorios", "admissao"]
+
 
 class TimeStampedModel(models.Model):
     """Base model do ecossistema. NUNCA modificar.
@@ -93,6 +95,15 @@ class User(AbstractBaseUser, TimeStampedModel):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
+    perfil = models.ForeignKey(
+        "core.Perfil",
+        related_name="usuarios",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        help_text="Perfil de acesso atribuído pelo Gestor; define as permissões por módulo.",
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = "email"
@@ -109,6 +120,84 @@ class User(AbstractBaseUser, TimeStampedModel):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
+
+
+class Perfil(TimeStampedModel):
+    """Perfil de acesso: template de permissões por módulo reutilizável
+    entre usuários RH. Gerido pelo painel exclusivo do Gestor (IsGestor).
+
+    Perfis tipo 'sistema' (o Administrador do próprio Gestor) nunca são
+    editáveis, desativáveis ou excluíveis — ver PerfilViewSet.
+    """
+
+    class Tipo(models.TextChoices):
+        SISTEMA = "sistema", "Sistema"
+        PERSONALIZADO = "personalizado", "Personalizado"
+
+    nome = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100)
+    descricao = models.CharField(max_length=255, blank=True)
+    tipo = models.CharField(max_length=20, choices=Tipo.choices, default=Tipo.PERSONALIZADO)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["nome"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["company_id", "slug"], name="unique_perfil_slug_per_company"
+            )
+        ]
+
+    def __str__(self):
+        return self.nome
+
+    def aplicar_a(self, user):
+        """Copia as permissões deste perfil para o UserFunctionPermission do
+        usuário. HasFunctionPermission só consulta UserFunctionPermission —
+        o Perfil é o template que o Gestor edita numa tela só, aplicado aqui
+        sempre que o perfil muda ou suas permissões são editadas."""
+        for perm in self.function_permissions.all():
+            UserFunctionPermission.objects.update_or_create(
+                user=user,
+                function=perm.function,
+                defaults={
+                    "can_view": perm.can_view,
+                    "can_create": perm.can_create,
+                    "can_edit": perm.can_edit,
+                    "can_delete": perm.can_delete,
+                },
+            )
+
+
+class PerfilFunctionPermission(TimeStampedModel):
+    """Permissão de um Perfil por módulo — o template copiado (ver
+    Perfil.aplicar_a) para o UserFunctionPermission de cada usuário
+    vinculado ao perfil."""
+
+    perfil = models.ForeignKey(
+        Perfil, related_name="function_permissions", on_delete=models.CASCADE
+    )
+    function = models.SlugField(max_length=100, help_text="Slug do módulo, ex: vagas, candidatos.")
+    can_view = models.BooleanField(default=False)
+    can_create = models.BooleanField(default=False)
+    can_edit = models.BooleanField(default=False)
+    can_delete = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["perfil", "function"], name="unique_perfil_function_permission"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.perfil.nome} · {self.function}"
+
+    def save(self, *args, **kwargs):
+        if not self.company_id:
+            self.company_id = self.perfil.company_id
+        super().save(*args, **kwargs)
 
 
 class UserFunctionPermission(TimeStampedModel):

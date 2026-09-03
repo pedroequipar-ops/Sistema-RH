@@ -11,8 +11,11 @@ type SidebarProps = {
 }
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const { hasPermission } = useAuth()
-  const items = NAV_ITEMS.filter((item) => !item.functionSlug || hasPermission(item.functionSlug, 'view'))
+  const { user, hasPermission } = useAuth()
+  const items = NAV_ITEMS.filter((item) => {
+    if (item.rolesOnly && (!user || !item.rolesOnly.includes(user.role))) return false
+    return !item.functionSlug || hasPermission(item.functionSlug, 'view')
+  })
 
   return (
     <aside

@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.permissions import BasePermission
 
-from apps.core.models import UserFunctionPermission
+from apps.core.models import User, UserFunctionPermission
 
 ACTION_FIELD = {
     "view": "can_view",
@@ -56,3 +56,16 @@ class HasFunctionPermission(BasePermission):
         return UserFunctionPermission.objects.filter(
             user=user, function=permission_path, **{field: True}
         ).exists()
+
+
+class IsGestor(BasePermission):
+    """Painel de gerenciamento de contas e permissões: exclusivo de quem tem
+    o papel Gestor (ou superuser). Deliberadamente fora do RBAC granular de
+    HasFunctionPermission — quem concede permissão não pode ser a mesma
+    coisa que uma permissão concedível a qualquer papel."""
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        return bool(user.is_superuser or user.role == User.Role.GESTOR)

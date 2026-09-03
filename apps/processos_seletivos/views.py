@@ -5,7 +5,6 @@ from rest_framework.response import Response
 
 from apps.admissao.services import criar_funcionario_para_processo
 from apps.core.logger import logger
-from apps.core.models import User
 from apps.core.permissions import HasFunctionPermission
 from apps.processos_seletivos.filters import ProcessoSeletivoFilter
 from apps.processos_seletivos.models import (
@@ -54,12 +53,6 @@ TRANSICOES_PERMITIDAS = {
 }
 
 
-def _aplicar_escopo_gestor(queryset, user, caminho_vaga):
-    if user.role == User.Role.GESTOR:
-        return queryset.filter(**{f"{caminho_vaga}__area_solicitante": user.area})
-    return queryset
-
-
 class ProcessoSeletivoViewSet(viewsets.ModelViewSet):
     """Kanban do funil de seleção: candidato -> vaga -> etapa atual."""
 
@@ -79,8 +72,7 @@ class ProcessoSeletivoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = ProcessoSeletivo.objects.filter(company_id=company_id)
-        return _aplicar_escopo_gestor(queryset, self.request.user, "vaga")
+        return ProcessoSeletivo.objects.filter(company_id=company_id)
 
     def perform_create(self, serializer):
         company_id = capture_company_id(self.request)
@@ -184,8 +176,7 @@ class AvaliacaoProcessoViewSet(
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = AvaliacaoProcesso.objects.filter(company_id=company_id)
-        return _aplicar_escopo_gestor(queryset, self.request.user, "processo__vaga")
+        return AvaliacaoProcesso.objects.filter(company_id=company_id)
 
     def perform_create(self, serializer):
         company_id = capture_company_id(self.request)
@@ -213,8 +204,7 @@ class TesteAplicadoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = TesteAplicado.objects.filter(company_id=company_id)
-        return _aplicar_escopo_gestor(queryset, self.request.user, "processo__vaga")
+        return TesteAplicado.objects.filter(company_id=company_id)
 
     def perform_create(self, serializer):
         company_id = capture_company_id(self.request)
@@ -258,8 +248,7 @@ class EntrevistaAgendamentoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         company_id = capture_company_id(self.request)
-        queryset = EntrevistaAgendamento.objects.filter(company_id=company_id)
-        return _aplicar_escopo_gestor(queryset, self.request.user, "processo__vaga")
+        return EntrevistaAgendamento.objects.filter(company_id=company_id)
 
     def perform_create(self, serializer):
         company_id = capture_company_id(self.request)
