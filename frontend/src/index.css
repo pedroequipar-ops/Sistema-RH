@@ -36,6 +36,11 @@
   border-color: var(--color-slate-200);
 }
 
+html {
+  margin: 0;
+  background-color: var(--color-slate-50);
+}
+
 body {
   margin: 0;
   background-color: var(--color-slate-50);

@@ -1,9 +1,8 @@
-import { Bell, Building2, LogOut, User as UserIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Building2, LogOut, User as UserIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/Badge'
+import { NotificacoesBell } from '@/components/layout/NotificacoesBell'
 import { useAuth } from '@/context/AuthContext'
-import { useNotificacoesNaoLidasCount } from '@/hooks/useComunicacoes'
 
 const ROLE_LABEL: Record<string, string> = {
   rh: 'RH',
@@ -14,7 +13,6 @@ const ROLE_LABEL: Record<string, string> = {
 export function Topbar() {
   const { user, hasPermission, logout } = useAuth()
   const podeVerNotificacoes = hasPermission('comunicacoes', 'view')
-  const { data: naoLidas } = useNotificacoesNaoLidasCount({ enabled: podeVerNotificacoes })
 
   return (
     <header className="flex h-16 shrink-0 items-center border-b border-slate-200 bg-white">
@@ -25,20 +23,7 @@ export function Topbar() {
         <span className="whitespace-nowrap text-sm font-semibold text-slate-900">Sistema RH</span>
       </div>
       <div className="flex flex-1 items-center justify-end gap-3 px-6">
-        {podeVerNotificacoes && (
-          <Link
-            to="/comunicacoes?tab=notificacoes"
-            aria-label={naoLidas ? `Notificações, ${naoLidas} não lidas` : 'Notificações'}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-          >
-            <Bell className="h-4.5 w-4.5" aria-hidden />
-            {!!naoLidas && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-                {naoLidas > 9 ? '9+' : naoLidas}
-              </span>
-            )}
-          </Link>
-        )}
+        {podeVerNotificacoes && <NotificacoesBell />}
         {user && (
           <>
             <Badge tone="sapphire">{ROLE_LABEL[user.role] ?? user.role}</Badge>

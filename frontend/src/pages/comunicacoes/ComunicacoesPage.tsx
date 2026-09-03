@@ -1,67 +1,23 @@
-import { Bell, Mail } from 'lucide-react'
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Spinner } from '@/components/ui/Spinner'
-import { useEmails, useMarcarNotificacaoLida, useNotificacoes } from '@/hooks/useComunicacoes'
-import { cn } from '@/lib/cn'
+import { useEmails } from '@/hooks/useComunicacoes'
 import { EMAIL_STATUS_LABEL, type EmailFilters, type EmailStatus } from '@/types/comunicacoes'
 
-type Tab = 'emails' | 'notificacoes'
-
 export function ComunicacoesPage() {
-  const [searchParams] = useSearchParams()
-  const [tab, setTab] = useState<Tab>(searchParams.get('tab') === 'notificacoes' ? 'notificacoes' : 'emails')
+  const [filters, setFilters] = useState<EmailFilters>({ status: '', tipo: '' })
+  const { data, isLoading, isError } = useEmails(filters)
 
   return (
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-semibold text-slate-900">Comunicações</h1>
-        <p className="text-sm text-slate-500">Histórico de e-mails enviados e notificações internas.</p>
+        <p className="text-sm text-slate-500">Histórico de e-mails enviados aos candidatos.</p>
       </div>
 
-      <div className="flex gap-1 border-b border-slate-200">
-        <button
-          onClick={() => setTab('emails')}
-          className={cn(
-            'flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium',
-            tab === 'emails'
-              ? 'border-sapphire-600 text-sapphire-700'
-              : 'border-transparent text-slate-500 hover:text-slate-700',
-          )}
-        >
-          <Mail className="h-4 w-4" aria-hidden />
-          E-mails enviados
-        </button>
-        <button
-          onClick={() => setTab('notificacoes')}
-          className={cn(
-            'flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium',
-            tab === 'notificacoes'
-              ? 'border-sapphire-600 text-sapphire-700'
-              : 'border-transparent text-slate-500 hover:text-slate-700',
-          )}
-        >
-          <Bell className="h-4 w-4" aria-hidden />
-          Notificações
-        </button>
-      </div>
-
-      {tab === 'emails' ? <EmailsTab /> : <NotificacoesTab />}
-    </div>
-  )
-}
-
-function EmailsTab() {
-  const [filters, setFilters] = useState<EmailFilters>({ status: '', tipo: '' })
-  const { data, isLoading, isError } = useEmails(filters)
-
-  return (
-    <div className="space-y-4">
       <Card className="p-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Select
@@ -126,61 +82,6 @@ function EmailsTab() {
           </div>
         ) : (
           <p className="p-6 text-sm text-slate-500">Nenhum e-mail encontrado.</p>
-        )}
-      </Card>
-    </div>
-  )
-}
-
-function NotificacoesTab() {
-  const [somenteNaoLidas, setSomenteNaoLidas] = useState(false)
-  const { data, isLoading, isError } = useNotificacoes({ lida: somenteNaoLidas ? 'false' : '' })
-  const marcarLida = useMarcarNotificacaoLida()
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button variant={somenteNaoLidas ? 'primary' : 'secondary'} onClick={() => setSomenteNaoLidas((v) => !v)}>
-          {somenteNaoLidas ? 'Mostrando só não lidas' : 'Mostrar só não lidas'}
-        </Button>
-      </div>
-
-      <Card className="overflow-hidden">
-        {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner />
-          </div>
-        ) : isError ? (
-          <p className="p-6 text-sm text-red-600">Não foi possível carregar as notificações.</p>
-        ) : data && data.results.length > 0 ? (
-          <ul className="divide-y divide-slate-100">
-            {data.results.map((notificacao) => (
-              <li
-                key={notificacao.id}
-                className={cn('flex items-center justify-between gap-4 px-4 py-3', !notificacao.lida && 'bg-sapphire-50/50')}
-              >
-                <div>
-                  <p className={cn('text-sm', notificacao.lida ? 'text-slate-600' : 'font-medium text-slate-900')}>
-                    {notificacao.mensagem}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {new Date(notificacao.created_at).toLocaleString('pt-BR')}
-                  </p>
-                </div>
-                {!notificacao.lida && (
-                  <Button
-                    variant="secondary"
-                    isLoading={marcarLida.isPending}
-                    onClick={() => marcarLida.mutate(notificacao.id)}
-                  >
-                    Marcar como lida
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="p-6 text-sm text-slate-500">Nenhuma notificação encontrada.</p>
         )}
       </Card>
     </div>

@@ -44,14 +44,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         ))}
       </nav>
 
-      <div className="border-t border-slate-200 p-3">
+      <div className={cn('flex border-t border-slate-200 p-3', collapsed ? 'justify-center' : 'justify-end')}>
         <button
           onClick={onToggle}
           aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
-          className={cn(
-            'flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700',
-            collapsed && 'mx-auto',
-          )}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
         >
           {collapsed ? (
             <PanelLeftOpen className="h-4.5 w-4.5" aria-hidden />

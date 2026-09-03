@@ -8,9 +8,16 @@ import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { Spinner } from '@/components/ui/Spinner'
-import { useMoverEtapa, useProcessos } from '@/hooks/useProcessos'
+import { useMoverEtapa, useMoverEtapaDireto, useProcessos } from '@/hooks/useProcessos'
 import { getApiErrorMessage } from '@/lib/apiError'
-import { ETAPA_LABEL, ETAPA_ORDEM, type Etapa, type ProcessoSeletivo } from '@/types/processos'
+import { cn } from '@/lib/cn'
+import {
+  ETAPA_LABEL,
+  ETAPA_ORDEM,
+  TRANSICOES_PERMITIDAS,
+  type Etapa,
+  type ProcessoSeletivo,
+} from '@/types/processos'
 
 const COLUNA_TONE: Record<Etapa, 'slate' | 'amber' | 'sapphire' | 'green' | 'red'> = {
   triagem: 'slate',
@@ -21,15 +28,20 @@ const COLUNA_TONE: Record<Etapa, 'slate' | 'amber' | 'sapphire' | 'green' | 'red
   reprovado: 'red',
 }
 
+type DragPayload = { id: string; etapaOrigem: Etapa }
+
 export function ProcessosKanbanPage() {
   const navigate = useNavigate()
   const [vagaId, setVagaId] = useState('')
   const [moverProcesso, setMoverProcesso] = useState<ProcessoSeletivo | null>(null)
   const [moverErro, setMoverErro] = useState<string | null>(null)
+  const [dragErro, setDragErro] = useState<string | null>(null)
+  const [dragOverEtapa, setDragOverEtapa] = useState<Etapa | null>(null)
 
   const { data: vagas } = useQuery({ queryKey: ['vagas-filtro'], queryFn: listVagasParaFiltro })
   const { data, isLoading, isError } = useProcessos({ vaga: vagaId })
   const moverEtapa = useMoverEtapa(moverProcesso?.id ?? '')
+  const moverEtapaDireto = useMoverEtapaDireto()
 
   const colunas = ETAPA_ORDEM.reduce<Record<Etapa, ProcessoSeletivo[]>>(
     (acc, etapa) => {
@@ -49,6 +61,26 @@ export function ProcessosKanbanPage() {
     }
   }
 
+  function onDrop(etapaDestino: Etapa, event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault()
+    setDragOverEtapa(null)
+    const raw = event.dataTransfer.getData('text/plain')
+    if (!raw) return
+    const { id, etapaOrigem } = JSON.parse(raw) as DragPayload
+    if (etapaOrigem === etapaDestino) return
+    if (!TRANSICOES_PERMITIDAS[etapaOrigem].includes(etapaDestino)) {
+      setDragErro(
+        `Não é possível mover direto de "${ETAPA_LABEL[etapaOrigem]}" para "${ETAPA_LABEL[etapaDestino]}".`,
+      )
+      return
+    }
+    setDragErro(null)
+    moverEtapaDireto.mutate(
+      { id, etapa: etapaDestino },
+      { onError: (error) => setDragErro(getApiErrorMessage(error)) },
+    )
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -66,6 +98,15 @@ export function ProcessosKanbanPage() {
         </Select>
       </div>
 
+      {dragErro && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <span>{dragErro}</span>
+          <button onClick={() => setDragErro(null)} className="font-medium hover:underline">
+            Fechar
+          </button>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Spinner />
@@ -75,34 +116,65 @@ export function ProcessosKanbanPage() {
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-2">
           {ETAPA_ORDEM.map((etapa) => (
-            <div key={etapa} className="w-64 shrink-0 space-y-3">
+            <div
+              key={etapa}
+              className={cn(
+                'w-64 shrink-0 space-y-3 rounded-lg p-1 transition-colors',
+                dragOverEtapa === etapa && 'bg-sapphire-50 ring-2 ring-sapphire-300',
+              )}
+              onDragOver={(event) => {
+                event.preventDefault()
+                if (dragOverEtapa !== etapa) setDragOverEtapa(etapa)
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setDragOverEtapa(null)
+                }
+              }}
+              onDrop={(event) => onDrop(etapa, event)}
+            >
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-700">{ETAPA_LABEL[etapa]}</h2>
                 <Badge tone={COLUNA_TONE[etapa]}>{colunas[etapa].length}</Badge>
               </div>
               <div className="space-y-2">
-                {colunas[etapa].map((processo) => (
-                  <Card
-                    key={processo.id}
-                    className="cursor-pointer p-3 hover:border-sapphire-300"
-                    onClick={() => navigate(`/processos-seletivos/${processo.id}`)}
-                  >
-                    <p className="text-sm font-medium text-slate-900">{processo.candidato_nome}</p>
-                    <p className="text-xs text-slate-500">{processo.vaga_cargo}</p>
-                    {etapa !== 'contratado' && etapa !== 'reprovado' && (
-                      <button
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          setMoverErro(null)
-                          setMoverProcesso(processo)
-                        }}
-                        className="mt-2 text-xs font-medium text-sapphire-700 hover:text-sapphire-800"
-                      >
-                        Mover etapa
-                      </button>
-                    )}
-                  </Card>
-                ))}
+                {colunas[etapa].map((processo) => {
+                  const podeArrastar = etapa !== 'contratado' && etapa !== 'reprovado'
+                  return (
+                    <Card
+                      key={processo.id}
+                      draggable={podeArrastar}
+                      onDragStart={(event) => {
+                        event.dataTransfer.effectAllowed = 'move'
+                        event.dataTransfer.setData(
+                          'text/plain',
+                          JSON.stringify({ id: processo.id, etapaOrigem: etapa } satisfies DragPayload),
+                        )
+                      }}
+                      onDragEnd={() => setDragOverEtapa(null)}
+                      onClick={() => navigate(`/processos-seletivos/${processo.id}`)}
+                      className={cn(
+                        'p-3 hover:border-sapphire-300',
+                        podeArrastar ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
+                      )}
+                    >
+                      <p className="text-sm font-medium text-slate-900">{processo.candidato_nome}</p>
+                      <p className="text-xs text-slate-500">{processo.vaga_cargo}</p>
+                      {podeArrastar && (
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setMoverErro(null)
+                            setMoverProcesso(processo)
+                          }}
+                          className="mt-2 text-xs font-medium text-sapphire-700 hover:text-sapphire-800"
+                        >
+                          Mover etapa
+                        </button>
+                      )}
+                    </Card>
+                  )
+                })}
                 {colunas[etapa].length === 0 && (
                   <p className="rounded-lg border border-dashed border-slate-200 p-3 text-center text-xs text-slate-400">
                     Vazio

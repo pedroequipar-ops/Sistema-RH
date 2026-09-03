@@ -35,3 +35,17 @@ export function useMoverEtapa(id: string) {
     },
   })
 }
+
+// Variante do mover-etapa que recebe o id do processo a cada chamada, em vez
+// de fixá-lo no momento de montar o hook — usada pelo drag-and-drop do
+// Kanban, onde o card arrastado pode ser qualquer um da coluna.
+export function useMoverEtapaDireto() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, etapa }: { id: string; etapa: Etapa }) => moverEtapa(id, etapa),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: processosKeys.detail(variables.id) })
+      queryClient.invalidateQueries({ queryKey: processosKeys.all })
+    },
+  })
+}
